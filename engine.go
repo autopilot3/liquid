@@ -202,22 +202,41 @@ func NewEngine() *Engine {
 				return ""
 			}
 			return splits[0]
-		case reflect.Slice:
-			slice := s.([]interface{})
-			if len(slice) == 0 {
+		case reflect.Slice,
+			reflect.Array:
+			v := reflect.ValueOf(s)
+			if v.IsNil() {
 				return nil
 			}
-			return slice[0]
+			if v.Len() == 0 {
+				return nil
+			}
+			return v.Index(0)
 		}
 		return nil
 	})
 
-	engine.RegisterFilter("last", func(s string) string {
-		splits := strings.Split(s, ",")
-		if len(splits) == 0 {
-			return ""
+	engine.RegisterFilter("last", func(s interface{}) interface{} {
+		switch k := reflect.TypeOf(s).Kind(); k {
+		case reflect.String:
+			str := s.(string)
+			splits := strings.Split(str, ",")
+			if len(splits) == 0 {
+				return ""
+			}
+			return splits[len(splits)-1]
+		case reflect.Slice,
+			reflect.Array:
+			v := reflect.ValueOf(s)
+			if v.IsNil() {
+				return nil
+			}
+			if v.Len() == 0 {
+				return nil
+			}
+			return v.Index(v.Len() - 1)
 		}
-		return splits[len(splits)-1]
+		return nil
 	})
 
 	return engine
