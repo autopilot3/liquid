@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -192,12 +193,23 @@ func NewEngine() *Engine {
 		return true
 	})
 
-	engine.RegisterFilter("first", func(s string) string {
-		splits := strings.Split(s, ",")
-		if len(splits) == 0 {
-			return ""
+	engine.RegisterFilter("first", func(s interface{}) interface{} {
+		switch k := reflect.TypeOf(s).Kind(); k {
+		case reflect.String:
+			str := s.(string)
+			splits := strings.Split(str, ",")
+			if len(splits) == 0 {
+				return ""
+			}
+			return splits[0]
+		case reflect.Slice:
+			slice := s.([]interface{})
+			if len(slice) == 0 {
+				return nil
+			}
+			return slice[0]
 		}
-		return splits[0]
+		return nil
 	})
 
 	engine.RegisterFilter("last", func(s string) string {
