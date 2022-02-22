@@ -194,6 +194,9 @@ func NewEngine() *Engine {
 	})
 
 	engine.RegisterFilter("first", func(s interface{}) interface{} {
+		if s == nil {
+			return nil
+		}
 		switch k := reflect.TypeOf(s).Kind(); k {
 		case reflect.String:
 			str := s.(string)
@@ -217,6 +220,9 @@ func NewEngine() *Engine {
 	})
 
 	engine.RegisterFilter("last", func(s interface{}) interface{} {
+		if s == nil {
+			return nil
+		}
 		switch k := reflect.TypeOf(s).Kind(); k {
 		case reflect.String:
 			str := s.(string)
