@@ -191,6 +191,23 @@ func NewEngine() *Engine {
 		}
 		return true
 	})
+
+	engine.RegisterFilter("first", func(s string) string {
+		splits := strings.Split(s, ",")
+		if len(splits) == 0 {
+			return ""
+		}
+		return splits[0]
+	})
+
+	engine.RegisterFilter("last", func(s string) string {
+		splits := strings.Split(s, ",")
+		if len(splits) == 0 {
+			return ""
+		}
+		return splits[len(splits)-1]
+	})
+
 	return engine
 }
 
