@@ -214,6 +214,9 @@ func (sv stringValue) Contains(substr Value) bool {
 	if !ok {
 		s = fmt.Sprint(substr.Interface())
 	}
+	if stringerInt, ok := sv.value.(fmt.Stringer); ok {
+		return strings.Contains(stringerInt.String(), s)
+	}
 	return strings.Contains(sv.value.(string), s)
 }
 
