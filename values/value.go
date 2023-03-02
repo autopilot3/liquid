@@ -228,6 +228,9 @@ func (sv stringValue) Contains(substr Value) bool {
 
 func (sv stringValue) PropertyValue(iv Value) Value {
 	if iv.Interface() == sizeKey {
+		if liquidString, ok := sv.value.(LiquidString); ok {
+			return ValueOf(len(liquidString.LiquidString()))
+		}
 		return ValueOf(len(sv.value.(string)))
 	}
 	return nilValue
