@@ -28,7 +28,6 @@ import (
 type Engine struct{ cfg render.Config }
 
 func formatDate(d date.Date, format string) string {
-	// Convert to time.Time for standard formatting
 	t, err := d.Time()
 	if err != nil {
 		return d.String()
