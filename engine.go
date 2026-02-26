@@ -202,11 +202,12 @@ func (e *Engine) AllowedTagsWithDefault() *Engine {
 	return e
 }
 
+// NewEngine returns a new Engine.
 func NewEngine() *Engine {
 	return NewEngineWithContext(context.Background())
 }
 
-// NewEngine returns a new Engine.
+// NewEngineWithContext returns a new Engine with the provided context
 func NewEngineWithContext(ctx context.Context) *Engine {
 	engine := &Engine{render.NewConfigWitchContext(ctx)}
 	filters.AddStandardFilters(&engine.cfg)
