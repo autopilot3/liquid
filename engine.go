@@ -86,8 +86,13 @@ func NewEngineWithContext(ctx context.Context) *Engine {
 		}
 	})
 
-	engine.RegisterFilter("rawPhone", func(s phone.International) string {
-		return s.CountryCode.String() + s.Number.String()
+	engine.RegisterFilter("rawPhone", func(v any) string {
+		switch s := v.(type) {
+		case phone.International:
+			return s.CountryCode.String() + s.Number.String()
+		default:
+			return fmt.Sprint(v)
+		}
 	})
 
 	engine.RegisterFilter("dateTimeFormatOrDefault", func(s time.Time, format string, defaultValue string) string {
