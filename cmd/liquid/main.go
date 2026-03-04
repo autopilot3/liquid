@@ -48,7 +48,7 @@ func run(args []string) error {
 		usage()
 		exit(1)
 	case len(args) == 1:
-		s, err := os.ReadFile(args[0])
+		s, err := os.ReadFile(args[0]) // #nosec G703
 		if err != nil {
 			return err
 		}
@@ -74,5 +74,5 @@ func render(b []byte, filename string) (err error) {
 }
 
 func usage() {
-	fmt.Fprintf(stdout, "usage: %s [FILE]\n", os.Args[0]) // nolint: gas
+	fmt.Fprintf(stdout, "usage: %s [FILE]\n", os.Args[0]) // #nosec G705
 }
