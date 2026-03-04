@@ -1,11 +1,11 @@
 module github.com/autopilot3/liquid
 
-go 1.25.4
+go 1.26
 
 require (
-	github.com/autopilot3/ap3-crm-api-go v0.0.0-20260216044158-d03e8606f215
-	github.com/autopilot3/ap3-helpers-go v0.0.0-20260213005636-e76b192adab6
-	github.com/autopilot3/ap3-types-go v0.0.0-20260212053740-00511407cbfb
+	github.com/autopilot3/ap3-crm-api-go v0.0.0-20260226033847-8bad11ad5a4e
+	github.com/autopilot3/ap3-helpers-go v0.0.0-20260302232704-6503c31c8dd2
+	github.com/autopilot3/ap3-types-go v0.0.0-20260217234535-3f680c0cb165
 	github.com/bojanz/currency v1.4.2
 	github.com/osteele/tuesday v1.0.3
 	github.com/stretchr/testify v1.11.1
@@ -14,13 +14,13 @@ require (
 )
 
 require (
-	filippo.io/edwards25519 v1.1.0 // indirect
+	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/alexsergivan/transliterator v1.0.1 // indirect
 	github.com/autopilot3/ap3-auth-go v1.0.13-0.20260129040750-071c40953799 // indirect
-	github.com/autopilot3/ap3-billing-api-go v0.0.0-20260116011425-ec965ec771de // indirect
-	github.com/autopilot3/ap3-index-go v0.0.0-20260127035718-3a7916fc3293 // indirect
-	github.com/autopilot3/ap3-ring-api-go v0.0.0-20260203004916-f8c6b9f54f18 // indirect
-	github.com/autopilot3/ap3-tasks-api-go v0.0.0-20251216224619-21a32cd61189 // indirect
+	github.com/autopilot3/ap3-billing-api-go v0.0.0-20260304003352-7d043d70e363 // indirect
+	github.com/autopilot3/ap3-index-go v0.0.0-20260226011006-47559ceb0c85 // indirect
+	github.com/autopilot3/ap3-ring-api-go v0.0.0-20260224222114-5f363066efbd // indirect
+	github.com/autopilot3/ap3-tasks-api-go v0.0.0-20260303050506-799021e83ad7 // indirect
 	github.com/autopilot3/uasurfer v0.0.0-20220503043020-b0a5a9c79fb5 // indirect
 	github.com/aws/aws-sdk-go v1.55.7 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.36.3 // indirect
