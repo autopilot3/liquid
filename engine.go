@@ -27,6 +27,115 @@ import (
 // An engine can be configured with additional filters and tags.
 type Engine struct{ cfg render.Config }
 
+type timeFormatSpec struct {
+	template      string
+	lowerMeridiem bool
+}
+
+var dateFormats = map[string]string{
+	"mdy":   "01/02/2006",
+	"dmy":   "02/01/2006",
+	"ymd":   "2006/01/02",
+	"ydm":   "2006/02/01",
+	"mdyaw": "Monday, January 2, 2006",
+	"mdya":  "January 2, 2006",
+	"mdys":  "1/2/06",
+	"dmyaw": "Monday, 2 January, 2006",
+	"dmya":  "2 January, 2006",
+	"dmys":  "2/1/06",
+	"d":     "2",
+	"dd":    "02",
+	"m":     "1",
+	"mm":    "01",
+	"yy":    "06",
+	"yyyy":  "2006",
+}
+
+var dateTimeFormats = map[string]timeFormatSpec{
+	"mdy12":   {template: "Jan 02 2006 3:04 PM"},
+	"mdy24":   {template: "Jan 02 2006 15:04"},
+	"dmy12":   {template: "02 Jan 2006 3:04 PM"},
+	"dmy24":   {template: "02 Jan 2006 15:04"},
+	"ymd12":   {template: "2006 Jan 02 3:04 PM"},
+	"ymd24":   {template: "2006 Jan 02 15:04"},
+	"ydm12":   {template: "2006 02 Jan 3:04 PM"},
+	"ydm24":   {template: "2006 02 Jan 15:04"},
+	"mdy24aw": {template: "15:04 Monday, January 2, 2006"},
+	"mdy12aw": {template: "3:04PM Monday, January 2, 2006", lowerMeridiem: true},
+	"mdyaw":   {template: "Monday, January 2, 2006"},
+	"mdy24a":  {template: "15:04 January 2, 2006"},
+	"mdy12a":  {template: "3:04PM January 2, 2006", lowerMeridiem: true},
+	"mdya":    {template: "January 2, 2006"},
+	"mdy24n":  {template: "15:04 01/02/2006"},
+	"mdy12n":  {template: "3:04PM 01/02/2006", lowerMeridiem: true},
+	"mdy24nd": {template: "01/02/2006 15:04"},
+	"mdy12nd": {template: "01/02/2006 3:04PM", lowerMeridiem: true},
+	"mdy":     {template: "01/02/2006"},
+	"mdys24":  {template: "15:04 1/2/06"},
+	"mdys12":  {template: "3:04PM 1/2/06", lowerMeridiem: true},
+	"mdys24d": {template: "1/2/06 15:04"},
+	"mdys12d": {template: "1/2/06 3:04PM", lowerMeridiem: true},
+	"mdys":    {template: "1/2/06"},
+	"dmy24aw": {template: "15:04 Monday, 2 January, 2006"},
+	"dmy12aw": {template: "3:04PM Monday, 2 January, 2006", lowerMeridiem: true},
+	"dmyaw":   {template: "Monday, 2 January, 2006"},
+	"dmy24a":  {template: "15:04 2 January, 2006"},
+	"dmy12a":  {template: "3:04PM 2 January, 2006", lowerMeridiem: true},
+	"dmya":    {template: "2 January, 2006"},
+	"dmy24n":  {template: "15:04 02/01/2006"},
+	"dmy12n":  {template: "3:04PM 02/01/2006", lowerMeridiem: true},
+	"dmy24nd": {template: "02/01/2006 15:04"},
+	"dmy12nd": {template: "02/01/2006 3:04PM", lowerMeridiem: true},
+	"dmy":     {template: "02/01/2006"},
+	"dmys24":  {template: "15:04 2/1/06"},
+	"dmys12":  {template: "3:04PM 2/1/06", lowerMeridiem: true},
+	"dmys24d": {template: "2/1/06 15:04"},
+	"dmys12d": {template: "2/1/06 3:04PM", lowerMeridiem: true},
+	"dmys":    {template: "2/1/06"},
+	"h24":     {template: "15"},
+	"h12":     {template: "3"},
+	"min":     {template: "04"},
+	"p":       {template: "PM", lowerMeridiem: true},
+	"d":       {template: "2"},
+	"dd":      {template: "02"},
+	"dow":     {template: "Monday"},
+	"m":       {template: "1"},
+	"mm":      {template: "01"},
+	"mon":     {template: "January"},
+	"yy":      {template: "06"},
+	"yyyy":    {template: "2006"},
+}
+
+func formatDate(d date.Date, format string) string {
+	t, err := d.Time()
+	if err != nil {
+		return d.String()
+	}
+
+	if layout, ok := dateFormats[format]; ok {
+		return t.Format(layout)
+	}
+
+	return d.String()
+}
+
+func lowerMeridiem(value string) string {
+	value = strings.ReplaceAll(value, "AM", "am")
+	return strings.ReplaceAll(value, "PM", "pm")
+}
+
+func formatDateTime(t time.Time, format string) string {
+	if spec, ok := dateTimeFormats[format]; ok {
+		formatted := t.Format(spec.template)
+		if spec.lowerMeridiem {
+			return lowerMeridiem(formatted)
+		}
+		return formatted
+	}
+
+	return t.String()
+}
+
 func (e *Engine) SetAllowedTags(allowedTags map[string]struct{}) *Engine {
 	e.cfg.AllowedTags = allowedTags
 	return e
@@ -36,11 +145,12 @@ func (e *Engine) AllowedTagsWithDefault() *Engine {
 	return e
 }
 
+// NewEngine returns a new Engine.
 func NewEngine() *Engine {
 	return NewEngineWithContext(context.Background())
 }
 
-// NewEngine returns a new Engine.
+// NewEngineWithContext returns a new Engine with the provided context
 func NewEngineWithContext(ctx context.Context) *Engine {
 	engine := &Engine{render.NewConfigWitchContext(ctx)}
 	filters.AddStandardFilters(&engine.cfg)
@@ -64,26 +174,8 @@ func NewEngineWithContext(ctx context.Context) *Engine {
 		if err != nil {
 			return ""
 		}
-		switch format {
-		case "mdy12":
-			return s.In(tz).Format("Jan 02 2006 3:04 PM")
-		case "mdy24":
-			return s.In(tz).Format("Jan 02 2006 15:04")
-		case "dmy12":
-			return s.In(tz).Format("02 Jan 2006 3:04 PM")
-		case "dmy24":
-			return s.In(tz).Format("02 Jan 2006 15:04")
-		case "ymd12":
-			return s.Format("2006 Jan 02 3:04 PM")
-		case "ymd24":
-			return s.Format("2006 Jan 02 15:04")
-		case "ydm12":
-			return s.Format("2006 02 Jan 3:04 PM")
-		case "ydm24":
-			return s.Format("2006 02 Jan 15:04")
-		default:
-			return s.String()
-		}
+		st := s.In(tz)
+		return formatDateTime(st, format)
 	})
 
 	engine.RegisterFilter("rawPhone", func(s phone.International) string {
@@ -94,27 +186,7 @@ func NewEngineWithContext(ctx context.Context) *Engine {
 		if s.IsZero() {
 			return defaultValue
 		}
-
-		switch format {
-		case "mdy12":
-			return s.Format("Jan 02 2006 3:04 PM")
-		case "mdy24":
-			return s.Format("Jan 02 2006 15:04")
-		case "dmy12":
-			return s.Format("02 Jan 2006 3:04 PM")
-		case "dmy24":
-			return s.Format("02 Jan 2006 15:04")
-		case "ymd12":
-			return s.Format("2006 Jan 02 3:04 PM")
-		case "ymd24":
-			return s.Format("2006 Jan 02 15:04")
-		case "ydm12":
-			return s.Format("2006 02 Jan 3:04 PM")
-		case "ydm24":
-			return s.Format("2006 02 Jan 15:04")
-		default:
-			return s.String()
-		}
+		return formatDateTime(s, format)
 	})
 
 	engine.RegisterFilter("dateFormatOrDefault", func(s interface{}, format string, defaultValue string) string {
@@ -134,19 +206,7 @@ func NewEngineWithContext(ctx context.Context) *Engine {
 		if d.IsZero() {
 			return defaultValue
 		}
-
-		switch format {
-		case "mdy":
-			return fmt.Sprintf("%02d/%02d/%d", d.Month(), d.Day(), d.Year())
-		case "dmy":
-			return fmt.Sprintf("%02d/%02d/%d", d.Day(), d.Month(), d.Year())
-		case "ymd":
-			return fmt.Sprintf("%d/%02d/%02d", d.Year(), d.Month(), d.Day())
-		case "ydm":
-			return fmt.Sprintf("%d/%02d/%02d", d.Year(), d.Day(), d.Month())
-		default:
-			return d.String()
-		}
+		return formatDate(d, format)
 	})
 
 	engine.RegisterFilter("decimal", func(s string, format string, currency string) string {
