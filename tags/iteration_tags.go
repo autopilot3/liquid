@@ -83,7 +83,12 @@ func (loop loopRenderer) render(w io.Writer, ctx render.Context) error {
 	}
 	var loopVarIdx int
 	if ctx.IsFindVars() {
-		loopSourceVarName := ctx.Get(expressions.LatestVarNameKey).(string)
+		varInt := ctx.Get(expressions.LatestVarNameKey)
+		// no loop var
+		if varInt == nil {
+			return nil
+		}
+		loopSourceVarName := varInt.(string)
 		val = []map[string]interface{}{
 			{}, // empty object
 		}
