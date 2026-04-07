@@ -27,51 +27,96 @@ import (
 // An engine can be configured with additional filters and tags.
 type Engine struct{ cfg render.Config }
 
+type timeFormatSpec struct {
+	template      string
+	lowerMeridiem bool
+}
+
+var dateFormats = map[string]string{
+	"mdy":   "01/02/2006",
+	"dmy":   "02/01/2006",
+	"ymd":   "2006/01/02",
+	"ydm":   "2006/02/01",
+	"mdyaw": "Monday, January 2, 2006",
+	"mdya":  "January 2, 2006",
+	"mdys":  "1/2/06",
+	"dmyaw": "Monday, 2 January, 2006",
+	"dmya":  "2 January, 2006",
+	"dmys":  "2/1/06",
+	"d":     "2",
+	"dd":    "02",
+	"m":     "1",
+	"mm":    "01",
+	"yy":    "06",
+	"yyyy":  "2006",
+}
+
+var dateTimeFormats = map[string]timeFormatSpec{
+	"mdy12":   {template: "Jan 02 2006 3:04 PM"},
+	"mdy24":   {template: "Jan 02 2006 15:04"},
+	"dmy12":   {template: "02 Jan 2006 3:04 PM"},
+	"dmy24":   {template: "02 Jan 2006 15:04"},
+	"ymd12":   {template: "2006 Jan 02 3:04 PM"},
+	"ymd24":   {template: "2006 Jan 02 15:04"},
+	"ydm12":   {template: "2006 02 Jan 3:04 PM"},
+	"ydm24":   {template: "2006 02 Jan 15:04"},
+	"mdy24aw": {template: "15:04 Monday, January 2, 2006"},
+	"mdy12aw": {template: "3:04PM Monday, January 2, 2006", lowerMeridiem: true},
+	"mdyaw":   {template: "Monday, January 2, 2006"},
+	"mdy24a":  {template: "15:04 January 2, 2006"},
+	"mdy12a":  {template: "3:04PM January 2, 2006", lowerMeridiem: true},
+	"mdya":    {template: "January 2, 2006"},
+	"mdy24n":  {template: "15:04 01/02/2006"},
+	"mdy12n":  {template: "3:04PM 01/02/2006", lowerMeridiem: true},
+	"mdy24nd": {template: "01/02/2006 15:04"},
+	"mdy12nd": {template: "01/02/2006 3:04PM", lowerMeridiem: true},
+	"mdy":     {template: "01/02/2006"},
+	"mdys24":  {template: "15:04 1/2/06"},
+	"mdys12":  {template: "3:04PM 1/2/06", lowerMeridiem: true},
+	"mdys24d": {template: "1/2/06 15:04"},
+	"mdys12d": {template: "1/2/06 3:04PM", lowerMeridiem: true},
+	"mdys":    {template: "1/2/06"},
+	"dmy24aw": {template: "15:04 Monday, 2 January, 2006"},
+	"dmy12aw": {template: "3:04PM Monday, 2 January, 2006", lowerMeridiem: true},
+	"dmyaw":   {template: "Monday, 2 January, 2006"},
+	"dmy24a":  {template: "15:04 2 January, 2006"},
+	"dmy12a":  {template: "3:04PM 2 January, 2006", lowerMeridiem: true},
+	"dmya":    {template: "2 January, 2006"},
+	"dmy24n":  {template: "15:04 02/01/2006"},
+	"dmy12n":  {template: "3:04PM 02/01/2006", lowerMeridiem: true},
+	"dmy24nd": {template: "02/01/2006 15:04"},
+	"dmy12nd": {template: "02/01/2006 3:04PM", lowerMeridiem: true},
+	"dmy":     {template: "02/01/2006"},
+	"dmys24":  {template: "15:04 2/1/06"},
+	"dmys12":  {template: "3:04PM 2/1/06", lowerMeridiem: true},
+	"dmys24d": {template: "2/1/06 15:04"},
+	"dmys12d": {template: "2/1/06 3:04PM", lowerMeridiem: true},
+	"dmys":    {template: "2/1/06"},
+	"h24":     {template: "15"},
+	"h12":     {template: "3"},
+	"min":     {template: "04"},
+	"p":       {template: "PM", lowerMeridiem: true},
+	"d":       {template: "2"},
+	"dd":      {template: "02"},
+	"dow":     {template: "Monday"},
+	"m":       {template: "1"},
+	"mm":      {template: "01"},
+	"mon":     {template: "January"},
+	"yy":      {template: "06"},
+	"yyyy":    {template: "2006"},
+}
+
 func formatDate(d date.Date, format string) string {
 	t, err := d.Time()
 	if err != nil {
 		return d.String()
 	}
 
-	switch format {
-	case "mdy":
-		return t.Format("01/02/2006")
-	case "dmy":
-		return t.Format("02/01/2006")
-	case "ymd":
-		return t.Format("2006/01/02")
-	case "ydm":
-		return t.Format("2006/02/01")
-	// US formats
-	case "mdyaw":
-		return t.Format("Monday, January 2, 2006")
-	case "mdya":
-		return t.Format("January 2, 2006")
-	case "mdys":
-		return t.Format("1/2/06")
-	// Everyone else formats
-	case "dmyaw":
-		return t.Format("Monday, 2 January, 2006")
-	case "dmya":
-		return t.Format("2 January, 2006")
-	case "dmys":
-		return t.Format("2/1/06")
-	// Individual pieces
-	case "d":
-		return t.Format("2")
-	case "dd":
-		return t.Format("02")
-	case "m":
-		return t.Format("1")
-	case "mm":
-		return t.Format("01")
-	case "yy":
-		return t.Format("06")
-	case "yyyy":
-		return t.Format("2006")
-	default:
-		return d.String()
+	if layout, ok := dateFormats[format]; ok {
+		return t.Format(layout)
 	}
+
+	return d.String()
 }
 
 func lowerMeridiem(value string) string {
@@ -80,117 +125,15 @@ func lowerMeridiem(value string) string {
 }
 
 func formatDateTime(t time.Time, format string) string {
-	switch format {
-	case "mdy12":
-		return t.Format("Jan 02 2006 3:04 PM")
-	case "mdy24":
-		return t.Format("Jan 02 2006 15:04")
-	case "dmy12":
-		return t.Format("02 Jan 2006 3:04 PM")
-	case "dmy24":
-		return t.Format("02 Jan 2006 15:04")
-	case "ymd12":
-		return t.Format("2006 Jan 02 3:04 PM")
-	case "ymd24":
-		return t.Format("2006 Jan 02 15:04")
-	case "ydm12":
-		return t.Format("2006 02 Jan 3:04 PM")
-	case "ydm24":
-		return t.Format("2006 02 Jan 15:04")
-	// US formats
-	case "mdy24aw":
-		return t.Format("15:04 Monday, January 2, 2006")
-	case "mdy12aw":
-		return lowerMeridiem(t.Format("3:04PM Monday, January 2, 2006"))
-	case "mdyaw":
-		return t.Format("Monday, January 2, 2006")
-	case "mdy24a":
-		return t.Format("15:04 January 2, 2006")
-	case "mdy12a":
-		return lowerMeridiem(t.Format("3:04PM January 2, 2006"))
-	case "mdya":
-		return t.Format("January 2, 2006")
-	case "mdy24n":
-		return t.Format("15:04 01/02/2006")
-	case "mdy12n":
-		return lowerMeridiem(t.Format("3:04PM 01/02/2006"))
-	case "mdy24nd":
-		return t.Format("01/02/2006 15:04")
-	case "mdy12nd":
-		return lowerMeridiem(t.Format("01/02/2006 3:04PM"))
-	case "mdy":
-		return t.Format("01/02/2006")
-	case "mdys24":
-		return t.Format("15:04 1/2/06")
-	case "mdys12":
-		return lowerMeridiem(t.Format("3:04PM 1/2/06"))
-	case "mdys24d":
-		return t.Format("1/2/06 15:04")
-	case "mdys12d":
-		return lowerMeridiem(t.Format("1/2/06 3:04PM"))
-	case "mdys":
-		return t.Format("1/2/06")
-	// Everyone else formats
-	case "dmy24aw":
-		return t.Format("15:04 Monday, 2 January, 2006")
-	case "dmy12aw":
-		return lowerMeridiem(t.Format("3:04PM Monday, 2 January, 2006"))
-	case "dmyaw":
-		return t.Format("Monday, 2 January, 2006")
-	case "dmy24a":
-		return t.Format("15:04 2 January, 2006")
-	case "dmy12a":
-		return lowerMeridiem(t.Format("3:04PM 2 January, 2006"))
-	case "dmya":
-		return t.Format("2 January, 2006")
-	case "dmy24n":
-		return t.Format("15:04 02/01/2006")
-	case "dmy12n":
-		return lowerMeridiem(t.Format("3:04PM 02/01/2006"))
-	case "dmy24nd":
-		return t.Format("02/01/2006 15:04")
-	case "dmy12nd":
-		return lowerMeridiem(t.Format("02/01/2006 3:04PM"))
-	case "dmy":
-		return t.Format("02/01/2006")
-	case "dmys24":
-		return t.Format("15:04 2/1/06")
-	case "dmys12":
-		return lowerMeridiem(t.Format("3:04PM 2/1/06"))
-	case "dmys24d":
-		return t.Format("2/1/06 15:04")
-	case "dmys12d":
-		return lowerMeridiem(t.Format("2/1/06 3:04PM"))
-	case "dmys":
-		return t.Format("2/1/06")
-	// Individual pieces
-	case "h24":
-		return t.Format("15")
-	case "h12":
-		return t.Format("3")
-	case "min":
-		return t.Format("04")
-	case "p":
-		return lowerMeridiem(t.Format("PM"))
-	case "d":
-		return t.Format("2")
-	case "dd":
-		return t.Format("02")
-	case "dow":
-		return t.Format("Monday")
-	case "m":
-		return t.Format("1")
-	case "mm":
-		return t.Format("01")
-	case "mon":
-		return t.Format("January")
-	case "yy":
-		return t.Format("06")
-	case "yyyy":
-		return t.Format("2006")
-	default:
-		return t.String()
+	if spec, ok := dateTimeFormats[format]; ok {
+		formatted := t.Format(spec.template)
+		if spec.lowerMeridiem {
+			return lowerMeridiem(formatted)
+		}
+		return formatted
 	}
+
+	return t.String()
 }
 
 func (e *Engine) SetAllowedTags(allowedTags map[string]struct{}) *Engine {

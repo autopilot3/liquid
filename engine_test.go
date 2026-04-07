@@ -494,3 +494,23 @@ func TestDateFormatOrDefaultFilter(t *testing.T) {
 		})
 	}
 }
+
+func TestFormatDate_UnknownFormatFallsBackToDateString(t *testing.T) {
+	d, err := date.New(2024, 6, 4, "UTC")
+	require.NoError(t, err)
+
+	require.Equal(t, d.String(), formatDate(d, "unknown-format"))
+}
+
+func TestFormatDateTime_UnknownFormatFallsBackToTimeString(t *testing.T) {
+	tm := time.Date(2024, time.June, 4, 15, 15, 0, 0, time.UTC)
+
+	require.Equal(t, tm.String(), formatDateTime(tm, "unknown-format"))
+}
+
+func TestFormatDateTime_LowerMeridiemIsAppliedSelectively(t *testing.T) {
+	tm := time.Date(2024, time.June, 4, 15, 15, 0, 0, time.UTC)
+
+	require.Equal(t, "Jun 04 2024 3:15 PM", formatDateTime(tm, "mdy12"))
+	require.Equal(t, "3:15pm June 4, 2024", formatDateTime(tm, "mdy12a"))
+}
