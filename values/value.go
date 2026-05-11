@@ -10,6 +10,9 @@ import (
 	"github.com/autopilot3/ap3-helpers-go/language"
 )
 
+// 1MB, 2x Shopify's limit (Liquid variables can hold strings up to 500KB in practice, though Shopify doesn't publish an official hard limit for individual variables.)
+const MaxVariableSize = 1 * 1024 * 1024
+
 // A Value is a Liquid runtime value.
 type Value interface {
 	// Value retrieval

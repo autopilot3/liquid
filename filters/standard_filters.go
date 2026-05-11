@@ -204,6 +204,9 @@ func AddStandardFilters(fd FilterDictionary) { // nolint: gocyclo
 
 	// string filters
 	fd.AddFilter("append", func(s, suffix string) string {
+		if len(s)+len(suffix) > values.MaxVariableSize {
+			return s
+		}
 		return s + suffix
 	})
 	fd.AddFilter("capitalize", func(s, suffix string) string {
@@ -225,6 +228,9 @@ func AddStandardFilters(fd FilterDictionary) { // nolint: gocyclo
 		return strings.ReplaceAll(s, "\n", "<br />")
 	})
 	fd.AddFilter("prepend", func(s, prefix string) string {
+		if len(s)+len(prefix) > values.MaxVariableSize {
+			return s
+		}
 		return prefix + s
 	})
 	fd.AddFilter("remove", func(s, old string) string {
@@ -234,9 +240,15 @@ func AddStandardFilters(fd FilterDictionary) { // nolint: gocyclo
 		return strings.Replace(s, old, "", 1)
 	})
 	fd.AddFilter("replace", func(s, old, new string) string {
+		if len(new) > values.MaxVariableSize {
+			return s
+		}
 		return strings.ReplaceAll(s, old, new)
 	})
 	fd.AddFilter("replace_first", func(s, old, new string) string {
+		if len(new) > values.MaxVariableSize {
+			return s
+		}
 		return strings.Replace(s, old, new, 1)
 	})
 	fd.AddFilter("sort_natural", sortNaturalFilter)
@@ -304,6 +316,9 @@ func AddStandardFilters(fd FilterDictionary) { // nolint: gocyclo
 		s, err := json.Marshal(value)
 		if err != nil {
 			return fmt.Sprintf("%#v", value)
+		}
+		if len(s) > values.MaxVariableSize {
+			return "Too big JSON to inspect"
 		}
 		return string(s)
 	})
