@@ -393,7 +393,7 @@ func NewEngineWithContext(ctx context.Context) *Engine {
 					formatter.MaxDigits = priceMaxDigits(format)
 					return formatter.Format(am)
 				}
-				logger.Warnw(engine.cfg.Context(), fmt.Sprintf("failed to format price %f with currency code %s: %s", num, isoCode, err.Error()), "liquid", "filter")
+				logger.Warnw(engine.cfg.Context(), fmt.Sprintf("failed to format price %f with currency code %s: %s", num, isoCode, err), "liquid", "filter")
 			}
 			return currencyCode + priceFormatNumber(num, format, loc)
 		}
