@@ -182,8 +182,11 @@ func TestDecimalWithDelimiterFilter(t *testing.T) {
 func TestPriceFilters(t *testing.T) {
 	engine := NewEngine()
 	bindings := map[string]any{
-		"usd": map[string]any{"amount": int64(245654000), "currency": "USD"},
-		"eur": map[string]any{"amount": int64(99900), "currency": "EUR"},
+		"usd":  map[string]any{"amount": int64(245654000), "currency": "USD"},
+		"eur":  map[string]any{"amount": int64(99900), "currency": "EUR"},
+		"neg":  map[string]any{"amount": int64(-1500), "currency": "USD"},
+		"zero": map[string]any{"amount": int64(0), "currency": "USD"},
+		"bad":  map[string]any{"amount": int64(1500), "currency": "XX"},
 	}
 	tests := []struct {
 		name          string
@@ -197,6 +200,10 @@ func TestPriceFilters(t *testing.T) {
 		{"value only whole", `{{ usd | price: 'value', 'whole', 'en' }}`, "245,654"},
 		{"currency only", `{{ usd | price: 'currency', '', '' }}`, "USD"},
 		{"missing field", `{{ missing | price: 'currency', '', '' }}`, ""},
+		{"negative currency & value", `{{ neg | price: 'currency_value', 'two', 'en' }}`, "-$1.50"},
+		{"negative value only", `{{ neg | price: 'value', 'two', 'en' }}`, "-1.50"},
+		{"zero currency & value", `{{ zero | price: 'currency_value', 'two', 'en' }}`, "$0.00"},
+		{"invalid currency falls back", `{{ bad | price: 'currency_value', 'two', 'en' }}`, "XX1.50"},
 	}
 
 	for _, test := range tests {
