@@ -119,6 +119,53 @@ func formatDate(d date.Date, format string) string {
 	return d.String()
 }
 
+func priceFromLiquid(v interface{}) (amount int64, currencyCode string, ok bool) {
+	m, mok := v.(map[string]any)
+	if !mok {
+		return 0, "", false
+	}
+	currencyCode, _ = m["currency"].(string)
+	switch a := m["amount"].(type) {
+	case int64:
+		amount = a
+	case int:
+		amount = int64(a)
+	case float64:
+		amount = int64(a)
+	default:
+		return 0, "", false
+	}
+	return amount, currencyCode, true
+}
+
+func priceMaxDigits(format string) uint8 {
+	switch format {
+	case "whole":
+		return 0
+	case "one":
+		return 1
+	default:
+		return 2
+	}
+}
+
+func priceFormatNumber(num float64, format string, loc string) string {
+	var formatTemplate string
+	switch format {
+	case "whole":
+		formatTemplate = "%.0f"
+	case "one":
+		formatTemplate = "%.1f"
+	default:
+		formatTemplate = "%.2f"
+	}
+	tag, err := language.Parse(loc)
+	if err != nil {
+		tag = language.English
+	}
+	return message.NewPrinter(tag).Sprintf(formatTemplate, num)
+}
+
 func lowerMeridiem(value string) string {
 	value = strings.ReplaceAll(value, "AM", "am")
 	return strings.ReplaceAll(value, "PM", "pm")
@@ -324,6 +371,32 @@ func NewEngineWithContext(ctx context.Context) *Engine {
 		value := p.Sprintf(formatTemplate, float64(num))
 
 		return value
+	})
+
+	engine.RegisterFilter("price", func(v interface{}, mode string, format string, loc string) string {
+		amount, currencyCode, ok := priceFromLiquid(v)
+		if !ok {
+			return ""
+		}
+		switch mode {
+		case "currency":
+			return currencyCode
+		case "value":
+			return priceFormatNumber(float64(amount)/1000, format, loc)
+		default: // "currency_value"
+			num := float64(amount) / 1000
+			isoCode := strings.TrimSpace(currencyCode)
+			if len(isoCode) == 3 {
+				am, err := currency.NewAmount(fmt.Sprintf("%.3f", num), isoCode)
+				if err == nil {
+					formatter := currency.NewFormatter(currency.NewLocale(loc))
+					formatter.MaxDigits = priceMaxDigits(format)
+					return formatter.Format(am)
+				}
+				logger.Warnw(engine.cfg.Context(), fmt.Sprintf("failed to format price %f with currency code %s: %s", num, isoCode, err.Error()), "liquid", "filter")
+			}
+			return currencyCode + priceFormatNumber(num, format, loc)
+		}
 	})
 
 	engine.RegisterFilter("booleanFormat", func(s string, format string) string {
