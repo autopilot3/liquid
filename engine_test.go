@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"testing"
 	"time"
 
@@ -173,6 +174,48 @@ func TestDecimalWithDelimiterFilter(t *testing.T) {
 			require.NoError(t, err)
 			if str != test.expectedValue {
 				t.Errorf("For %s, expected %s, got %s", test.name, test.expectedValue, str)
+			}
+		})
+	}
+}
+
+func TestPriceFilters(t *testing.T) {
+	engine := NewEngine()
+	bindings := map[string]any{
+		"usd":  map[string]any{"amount": int64(245654000), "currency": "USD"},
+		"eur":  map[string]any{"amount": int64(99900), "currency": "EUR"},
+		"neg":  map[string]any{"amount": int64(-1500), "currency": "USD"},
+		"zero": map[string]any{"amount": int64(0), "currency": "USD"},
+		"bad":  map[string]any{"amount": int64(1500), "currency": "XX"},
+	}
+	tests := []struct {
+		name          string
+		liquid        string
+		expectedValue string
+	}{
+		{"currency & value two", `{{ usd | price: 'currency_value', 'two', 'en' }}`, "$245,654.00"},
+		{"currency & value whole", `{{ usd | price: 'currency_value', 'whole', 'en' }}`, "$245,654"},
+		{"euro currency & value", `{{ eur | price: 'currency_value', 'two', 'de' }}`, "99,90 €"},
+		{"value only two", `{{ usd | price: 'value', 'two', 'en' }}`, "245,654.00"},
+		{"value only whole", `{{ usd | price: 'value', 'whole', 'en' }}`, "245,654"},
+		{"currency only", `{{ usd | price: 'currency', '', '' }}`, "USD"},
+		{"missing field", `{{ missing | price: 'currency', '', '' }}`, ""},
+		{"negative currency & value", `{{ neg | price: 'currency_value', 'two', 'en' }}`, "-$1.50"},
+		{"negative value only", `{{ neg | price: 'value', 'two', 'en' }}`, "-1.50"},
+		{"zero currency & value", `{{ zero | price: 'currency_value', 'two', 'en' }}`, "$0.00"},
+		{"invalid currency falls back", `{{ bad | price: 'currency_value', 'two', 'en' }}`, "XX1.50"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			str, err := engine.ParseAndRenderString(test.liquid, bindings)
+			require.NoError(t, err)
+			// bojanz/currency separates value and symbol with a non-breaking space; normalise for comparison.
+			nbsp := string(rune(0xa0))
+			got := strings.ReplaceAll(str, nbsp, " ")
+			want := strings.ReplaceAll(test.expectedValue, nbsp, " ")
+			if got != want {
+				t.Errorf("For %s, expected %q, got %q", test.name, want, got)
 			}
 		})
 	}
