@@ -16,15 +16,32 @@ type nodeContext struct {
 
 // newNodeContext creates a new evaluation context.
 func newNodeContext(scope map[string]interface{}, c Config) nodeContext {
-	// The assign tag modifies the scope, so make a copy first.
-	// TODO this isn't really the right place for this.
-	vars := map[string]interface{}{}
-	for k, v := range scope {
-		vars[k] = v
-	}
 	return nodeContext{
-		bindings: vars,
+		bindings: deepCopyBindings(scope),
 		config:   c,
+	}
+}
+
+func deepCopyBindings(scope map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{}, len(scope))
+	for k, v := range scope {
+		out[k] = deepCopyValue(v)
+	}
+	return out
+}
+
+func deepCopyValue(v interface{}) interface{} {
+	switch val := v.(type) {
+	case map[string]interface{}:
+		return deepCopyBindings(val)
+	case []interface{}:
+		cp := make([]interface{}, len(val))
+		for i, e := range val {
+			cp[i] = deepCopyValue(e)
+		}
+		return cp
+	default:
+		return v
 	}
 }
 
