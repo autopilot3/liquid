@@ -42,7 +42,7 @@ func parse(source string) (p *parseValue, err error) {
 			case UndefinedFilter:
 				err = e
 			default:
-				panic(r)
+				err = SyntaxError(fmt.Errorf("unknown syntax error %s in %q", source, err).Error())
 			}
 		}
 	}()
