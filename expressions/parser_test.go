@@ -32,6 +32,7 @@ var parseErrorTests = []struct{ in, expected string }{
 	{`%cycle 'a' 'b'`, "syntax error"},
 	{`%loop a in in`, "syntax error"},
 	{`%when a b`, "syntax error"},
+	{`%assign 999999999999999999999`, "syntax error"},
 }
 
 // Since the parser returns funcs, there's no easy way to test them except evaluation

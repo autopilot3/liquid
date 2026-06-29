@@ -9,7 +9,7 @@ require (
 	github.com/bojanz/currency v1.4.2
 	github.com/osteele/tuesday v1.0.3
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/text v0.37.0
+	golang.org/x/text v0.38.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -65,7 +65,7 @@ require (
 	github.com/prometheus/common v0.63.0 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/recurly/recurly-client-go/v4 v4.62.0 // indirect
-	github.com/slack-go/slack v0.16.0 // indirect
+	github.com/slack-go/slack v0.27.0 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
@@ -76,11 +76,11 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.1 // indirect
-	golang.org/x/crypto v0.51.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/exp v0.0.0-20260212183809-81e46e3db34a // indirect
-	golang.org/x/net v0.54.0 // indirect
-	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/net v0.56.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260504160031-60b97b32f348 // indirect
 	google.golang.org/grpc v1.81.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
