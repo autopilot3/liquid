@@ -468,10 +468,8 @@ func (lex *lexer) Lex(out *yySymType) int {
 				(lex.p)--
 				{
 					tok = LITERAL
-					n, err := strconv.ParseInt(lex.token(), 10, 64)
-					if err != nil {
-						panic(err)
-					}
+					// intentionally skip error
+					n, _ := strconv.ParseInt(lex.token(), 10, 64)
 					out.val = int(n)
 					(lex.p)++
 					goto _out
@@ -483,10 +481,8 @@ func (lex *lexer) Lex(out *yySymType) int {
 				(lex.p)--
 				{
 					tok = LITERAL
-					n, err := strconv.ParseFloat(lex.token(), 64)
-					if err != nil {
-						panic(err)
-					}
+					// intentionally skip error
+					n, _ := strconv.ParseFloat(lex.token(), 64)
 					out.val = n
 					(lex.p)++
 					goto _out
@@ -532,10 +528,8 @@ func (lex *lexer) Lex(out *yySymType) int {
 				(lex.p) = (lex.te) - 1
 				{
 					tok = LITERAL
-					n, err := strconv.ParseInt(lex.token(), 10, 64)
-					if err != nil {
-						panic(err)
-					}
+					// intentionally skip error
+					n, _ := strconv.ParseInt(lex.token(), 10, 64)
 					out.val = int(n)
 					(lex.p)++
 					goto _out
