@@ -47,19 +47,13 @@ func (lex *lexer) Lex(out *yySymType) int {
 		}
 		action Int {
 			tok = LITERAL
-			n, err := strconv.ParseInt(lex.token(), 10, 64)
-			if err != nil {
-				panic(err)
-			}
+			n, _ := strconv.ParseInt(lex.token(), 10, 64)
 			out.val = int(n)
 			fbreak;
 		}
 		action Float {
 			tok = LITERAL
-			n, err := strconv.ParseFloat(lex.token(), 64)
-			if err != nil {
-				panic(err)
-			}
+			n, _ := strconv.ParseFloat(lex.token(), 64)
 			out.val = n
 			fbreak;
 		}
