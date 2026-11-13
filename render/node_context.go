@@ -17,32 +17,20 @@ type nodeContext struct {
 // newNodeContext creates a new evaluation context.
 func newNodeContext(scope map[string]interface{}, c Config) nodeContext {
 	return nodeContext{
-		bindings: deepCopyBindings(scope),
+		bindings: copyBindings(scope),
 		config:   c,
 	}
 }
 
-func deepCopyBindings(scope map[string]interface{}) map[string]interface{} {
+// copyBindings copies only the top level. Rendering only writes top-level keys
+// (assign, capture, loop and assigned vars), and a deep copy costs the size of
+// every nested value (e.g. a large json binding) on each render.
+func copyBindings(scope map[string]interface{}) map[string]interface{} {
 	out := make(map[string]interface{}, len(scope))
 	for k, v := range scope {
-		out[k] = deepCopyValue(v)
+		out[k] = v
 	}
 	return out
-}
-
-func deepCopyValue(v interface{}) interface{} {
-	switch val := v.(type) {
-	case map[string]interface{}:
-		return deepCopyBindings(val)
-	case []interface{}:
-		cp := make([]interface{}, len(val))
-		for i, e := range val {
-			cp[i] = deepCopyValue(e)
-		}
-		return cp
-	default:
-		return v
-	}
 }
 
 func newFindVariablesNodeContext(c Config) nodeContext {
